@@ -29,11 +29,11 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 
 <section class="panel" id="quickStart">
 <h2>Value a card</h2>
-<div class="muted">Start with the camera or search. Advanced valuation keeps the full founder evidence controls.</div>
+<div class="muted">Choose the fastest path: scan a card, search by card details, or open Advanced Real-Time Valuation for full market evidence and comp controls.</div>
 <div class="actions">
-<button type="button" id="scanBtn">📸 SCAN MY CARD</button>
-<button type="button" id="searchBtn" class="secondary">🔎 SEARCH MY CARD</button>
-<button type="button" id="advancedBtn" class="secondary">🧠 ADVANCED VALUATION</button>
+<button type="button" id="scanBtn">📸 SCAN CARD — FAST VALUE</button>
+<button type="button" id="searchBtn" class="secondary">🔎 SEARCH CARD — REAL-TIME VALUE</button>
+<button type="button" id="advancedBtn" class="secondary">🧠 ADVANCED REAL-TIME VALUATION</button>
 </div>
 <div id="scanArea" style="display:none;margin-top:16px">
 <div class="fields">
@@ -65,7 +65,7 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 </section>
 
 <section class="panel">
-<h2>Founder adjustments</h2>
+<h2>Advanced valuation adjustments</h2>
 <div class="muted">Temporary beta controls. Enter relative target-vs-comp percentages, e.g. 15 means +15%. Card IQ blends these signals instead of compounding them.</div>
 <div class="fields" style="margin-top:12px">
 <label>Scarcity / parallel %<input id="scarcity" type="number" value="0"></label>
@@ -78,7 +78,7 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 </div>
 
 <section class="panel">
-<h2>Comparable market evidence</h2>
+<h2>Real-time market evidence</h2>
 <div class="muted">Enter actual sold prices when possible. Every important comp includes grader and grade.</div>
 
 <div class="comp"><div class="compgrid">
@@ -111,7 +111,7 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 <label>Card Ladder estimate ($)<input id="cardLadder" type="number" step="0.01"></label><div></div><div></div><div></div>
 </div><div class="tiny" style="margin-top:8px">Card Ladder is external reference data only. PSA price estimates are intentionally excluded.</div></div>
 
-<div class="actions"><button type="submit">Calculate Live Value</button><button type="button" id="resetBtn" class="secondary">Reset</button></div>
+<div class="actions"><button type="submit">CALCULATE REAL-TIME VALUE</button><button type="button" id="resetBtn" class="secondary">Reset</button></div>
 <div id="status" class="status"></div>
 </section>
 </form>
