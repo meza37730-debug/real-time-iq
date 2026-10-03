@@ -18,6 +18,12 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.result{display:none}.result.show{display:block}.resultgrid{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px}
 @media(max-width:850px){.resultgrid{grid-template-columns:1fr}}.value{font-size:44px;font-weight:950;margin:.15rem 0}.range{font-size:18px;font-weight:850}.reason{background:#0f182b;border:1px solid var(--border);border-radius:14px;padding:14px}
 .reason div{margin:8px 0;color:var(--muted)}.reason strong{color:var(--text)}.status{margin-top:12px;color:var(--muted);font-size:13px}.note{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+
+.cameraOverlay{position:fixed;inset:0;background:#000;z-index:9999;display:none;flex-direction:column}
+.cameraOverlay.show{display:flex}.cameraTop{padding:14px 16px;display:flex;justify-content:space-between;align-items:center}
+.cameraStage{position:relative;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.cameraStage video{width:100%;height:100%;object-fit:cover}.guide{position:absolute;width:min(78vw,420px);aspect-ratio:2.5/3.5;border:3px solid white;border-radius:18px;box-shadow:0 0 0 9999px rgba(0,0,0,.28)}
+.cameraBottom{padding:18px;text-align:center}.shutter{width:72px;height:72px;border-radius:50%;border:6px solid white;background:#ddd;padding:0}.cameraHint{margin-bottom:12px;font-weight:900}
 </style>
 </head>
 <body>
@@ -27,6 +33,12 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 <div class="pill">FREE BETA · No credit card</div>
 </section>
 
+<div id="cameraOverlay" class="cameraOverlay">
+<div class="cameraTop"><strong id="cameraTitle">FRONT OF CARD</strong><button type="button" id="closeCamera" class="secondary">✕</button></div>
+<div class="cameraStage"><video id="cameraVideo" autoplay playsinline muted></video><div class="guide"></div></div>
+<div class="cameraBottom"><div id="cameraHint" class="cameraHint">Fit the FRONT of the card inside the frame</div><button type="button" id="shutter" class="shutter" aria-label="Take photo"></button></div>
+<canvas id="cameraCanvas" style="display:none"></canvas>
+</div>
 <section class="panel" id="quickStart">
 <h2>Value a card</h2>
 <div class="muted">Choose the fastest path: scan a card, search by card details, or open Advanced Real-Time Valuation for full market evidence and comp controls.</div>
@@ -35,15 +47,7 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 <button type="button" id="searchBtn" class="secondary">🔎 SEARCH CARD — REAL-TIME VALUE</button>
 <button type="button" id="advancedBtn" class="secondary">🧠 ADVANCED REAL-TIME VALUATION</button>
 </div>
-<div id="scanArea" style="display:none;margin-top:16px">
-<div class="fields">
-<label>Front photo<input id="frontPhoto" type="file" accept="image/*" capture="environment"></label>
-<label>Back photo<input id="backPhoto" type="file" accept="image/*" capture="environment"></label>
-</div>
-<div class="tiny" style="margin-top:10px">Beta capture: front + back photos can be taken now. Automatic card identification and the Visual Card Condition Report require the vision backend and are not active yet.</div>
-<div class="actions"><button type="button" id="estimateScanBtn">Estimate</button></div>
-<div id="scanStatus" class="status"></div>
-</div>
+<div id="scanArea" style="display:none;margin-top:16px"><div id="scanStatus" class="status"></div></div>
 </section>
 
 <form id="cardForm" style="display:none">
@@ -129,10 +133,15 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 (() => {
 const $=id=>document.getElementById(id);
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
-$('scanBtn').addEventListener('click',()=>{$('scanArea').style.display='block';$('cardForm').style.display='none';$('scanArea').scrollIntoView({behavior:'smooth',block:'nearest'});});
+let cameraStream=null,scanSide='front',frontShot=null,backShot=null;
+async function stopCamera(){if(cameraStream){cameraStream.getTracks().forEach(t=>t.stop());cameraStream=null;}$('cameraOverlay').classList.remove('show');}
+async function startScan(){try{frontShot=null;backShot=null;scanSide='front';$('cardForm').style.display='none';$('scanArea').style.display='block';$('cameraTitle').textContent='FRONT OF CARD';$('cameraHint').textContent='Fit the FRONT of the card inside the frame';cameraStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});$('cameraVideo').srcObject=cameraStream;$('cameraOverlay').classList.add('show');}catch(err){$('scanStatus').textContent='Camera access was blocked or unavailable. Allow camera permission in your browser and tap Scan again.';}}
+$('scanBtn').addEventListener('click',startScan);
+$('closeCamera').addEventListener('click',stopCamera);
+$('shutter').addEventListener('click',()=>{const v=$('cameraVideo'),cv=$('cameraCanvas');cv.width=v.videoWidth;cv.height=v.videoHeight;cv.getContext('2d').drawImage(v,0,0);const shot=cv.toDataURL('image/jpeg',.9);if(scanSide==='front'){frontShot=shot;scanSide='back';$('cameraTitle').textContent='BACK OF CARD';$('cameraHint').textContent='Great. Now fit the BACK of the card inside the frame';}else{backShot=shot;stopCamera();$('scanStatus').textContent='✓ Front captured  ✓ Back captured — photos ready for card identification and valuation.';}});
+
 $('advancedBtn').addEventListener('click',()=>{$('cardForm').style.display='block';$('scanArea').style.display='none';$('cardForm').scrollIntoView({behavior:'smooth',block:'start'});});
-$('searchBtn').addEventListener('click',()=>{$('cardForm').style.display='block';$('scanArea').style.display='none';$('player').focus();$('status').textContent='Search beta: enter the player and card details below.';});
-$('estimateScanBtn').addEventListener('click',()=>{const front=$('frontPhoto').files[0],back=$('backPhoto').files[0];if(!front||!back){$('scanStatus').textContent='Take both front and back photos first.';return;}$('scanStatus').textContent='Front + back captured. Automatic photo identification and Visual Card Condition Report are the next backend step; no fake estimate is generated from photos yet.';});
+$('searchBtn').addEventListener('click',()=>{$('cardForm').style.display='block';$('scanArea').style.display='none';$('player').focus();$('status').textContent='Search mode: enter the card details. Market evidence is optional.';});
 const nval=id=>{const s=$(id).value.trim();if(!s)return null;const n=Number(s);return Number.isFinite(n)&&n>=0?n:null};
 function normalize(price,grader,targetGrader){
  if(price===null)return null; let low=price,high=price,note='No grader adjustment';
