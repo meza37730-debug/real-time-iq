@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Real-Time Card IQ — Free Beta</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2e;--card:#17213a;--text:#f5f7fb;--muted:#a9b4c8;--border:#2a3550;--accent:#78aefc}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1020,#0e1628);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1100px;margin:auto;padding:22px}.hero,.panel,.result{background:rgba(23,33,58,.96);border:1px solid var(--border);border-radius:20px;padding:20px;margin-bottom:18px}
+.hero{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}.kicker{text-transform:uppercase;letter-spacing:.16em;font-size:12px;color:var(--muted);font-weight:800}
+h1{margin:.2rem 0;font-size:clamp(30px,5vw,46px)}h2{font-size:19px;margin:0 0 12px}.muted,.tiny{color:var(--muted)}.muted{font-size:13px}.tiny{font-size:12px}
+.pill{border:1px solid var(--border);border-radius:999px;padding:9px 13px;font-weight:800;height:max-content}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.comp{border-top:1px solid var(--border);padding-top:14px;margin-top:14px}.comp:first-of-type{border-top:0;margin-top:0;padding-top:0}.compgrid{display:grid;grid-template-columns:1.35fr .8fr .8fr .8fr;gap:10px;align-items:end}
+@media(max-width:850px){.grid2{grid-template-columns:1fr}.compgrid{grid-template-columns:1fr 1fr}}@media(max-width:560px){.fields,.compgrid{grid-template-columns:1fr}}
+label{display:block;font-size:13px;font-weight:800}input,select{width:100%;margin-top:6px;padding:12px 13px;border-radius:12px;border:1px solid var(--border);background:#0d1527;color:var(--text);font-size:16px}
+button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:15px;background:var(--accent);color:#06101f;cursor:pointer}.secondary{background:#0f182b;color:var(--text);border:1px solid var(--border)}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.result{display:none}.result.show{display:block}.resultgrid{display:grid;grid-template-columns:.85fr 1.15fr;gap:18px}
+@media(max-width:850px){.resultgrid{grid-template-columns:1fr}}.value{font-size:44px;font-weight:950;margin:.15rem 0}.range{font-size:18px;font-weight:850}.reason{background:#0f182b;border:1px solid var(--border);border-radius:14px;padding:14px}
+.reason div{margin:8px 0;color:var(--muted)}.reason strong{color:var(--text)}.status{margin-top:12px;color:var(--muted);font-size:13px}.note{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main class="wrap">
+<section class="hero">
+<div><div class="kicker">Rare-Card Real-Time Valuation Engine</div><h1>Real-Time Card IQ</h1><div class="muted">Up-to-the-minute valuations for rare cards — even when no recent exact sale exists.</div></div>
+<div class="pill">FREE BETA · No credit card</div>
+</section>
+
+<form id="cardForm">
+<div class="grid2">
+<section class="panel">
+<h2>Target card</h2>
+<div class="fields">
+<label>Player<input id="player" placeholder="Shohei Ohtani"></label>
+<label>Year<input id="year" type="number" placeholder="2022"></label>
+<label style="grid-column:1/-1">Set / card<input id="setname" placeholder="Topps Luminaries Hit Kings"></label>
+<label>Product family<select id="product"><option value="">Select</option><option>Topps Chrome</option><option>Topps Chrome Black</option><option>Topps Definitive</option><option>Topps Luminaries</option><option>Topps Now</option><option>Panini / Donruss</option><option>Other</option></select></label>
+<label>Parallel<input id="parallel" placeholder="Red"></label>
+<label>Serial print run<input id="printRun" type="number" placeholder="10"></label>
+<label>Grading company<select id="targetGrader"><option>PSA</option><option>BGS / Beckett</option><option>SGC</option><option>CGC</option><option>Raw</option><option>Other</option></select></label>
+<label>Grade<input id="targetGrade" placeholder="10"></label>
+<label>Population at grade<input id="pop" type="number" placeholder="3"></label>
+</div>
+<div class="actions"><button type="button" id="exampleBtn">Load Ohtani test case</button></div>
+</section>
+
+<section class="panel">
+<h2>Founder adjustments</h2>
+<div class="muted">Temporary beta controls. Enter percentages, e.g. 15 means +15%.</div>
+<div class="fields" style="margin-top:12px">
+<label>Scarcity / parallel %<input id="scarcity" type="number" value="0"></label>
+<label>Grade / population / ceiling %<input id="gradePop" type="number" value="0"></label>
+<label>Historical significance %<input id="history" type="number" value="0"></label>
+<label>Product prestige %<input id="prestige" type="number" value="0"></label>
+</div>
+<div class="tiny" style="margin-top:10px">These will later be calculated automatically by the Master IQ Library.</div>
+</section>
+</div>
+
+<section class="panel">
+<h2>Comparable market evidence</h2>
+<div class="muted">Enter actual sold prices when possible. Every important comp includes grader and grade.</div>
+
+<div class="comp"><div class="compgrid">
+<label>Recent exact sale ($)<input id="exactPrice" type="number" step="0.01"></label>
+<label>Grader<select id="exactGrader"><option value="">—</option><option>PSA</option><option>BGS / Beckett</option><option>SGC</option><option>CGC</option><option>Raw</option></select></label>
+<label>Grade<input id="exactGrade" placeholder="10"></label><div></div>
+</div></div>
+
+<div class="comp"><div class="compgrid">
+<label>Same-year closest comp ($)<input id="samePrice" type="number" step="0.01"></label>
+<label>Grader<select id="sameGrader"><option value="">—</option><option>PSA</option><option>BGS / Beckett</option><option>SGC</option><option>CGC</option><option>Raw</option></select></label>
+<label>Grade<input id="sameGrade" placeholder="10"></label><div></div>
+</div></div>
+
+<div class="comp"><div class="compgrid">
+<label>Closest other-year comp ($)<input id="yearPrice" type="number" step="0.01"></label>
+<label>Year<input id="compYear" type="number" placeholder="2024"></label>
+<label>Grader<select id="yearGrader"><option value="">—</option><option>PSA</option><option>BGS / Beckett</option><option>SGC</option><option>CGC</option><option>Raw</option></select></label>
+<label>Grade<input id="yearGrade" placeholder="8.5"></label>
+</div></div>
+
+<div class="comp"><div class="compgrid">
+<label>Representative live ask ($)<input id="askPrice" type="number" step="0.01"></label>
+<label>Grader<select id="askGrader"><option value="">—</option><option>PSA</option><option>BGS / Beckett</option><option>SGC</option><option>CGC</option><option>Raw</option></select></label>
+<label>Grade<input id="askGrade" placeholder="8.5"></label>
+<label>Days unsold<input id="days" type="number" value="0"></label>
+</div></div>
+
+<div class="comp"><div class="compgrid">
+<label>Card Ladder estimate ($)<input id="cardLadder" type="number" step="0.01"></label><div></div><div></div><div></div>
+</div><div class="tiny" style="margin-top:8px">Card Ladder is external reference data only. PSA price estimates are intentionally excluded.</div></div>
+
+<div class="actions"><button type="submit">Calculate Live Value</button><button type="button" id="resetBtn" class="secondary">Reset</button></div>
+<div id="status" class="status"></div>
+</section>
+</form>
+
+<section id="result" class="result">
+<div class="resultgrid">
+<div><div class="kicker">Beta Live Value</div><div id="value" class="value">$0</div><div id="range" class="range"></div><div id="confidence" class="muted" style="margin-top:8px"></div></div>
+<div class="reason"><strong>How Card IQ normalized the evidence</strong><div id="reasoning"></div></div>
+</div>
+<div class="note">Beta rule: when a BGS/Beckett comp is compared to a PSA target, Card IQ carries a provisional 30–60% PSA premium range. This is a market range, not a fixed law; the Master IQ Library will refine it by player, set, grade, scarcity and card type.</div>
+</section>
+</main>
+
+<script>
+(() => {
+const $=id=>document.getElementById(id);
+const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
+const nval=id=>{const s=$(id).value.trim();if(!s)return null;const n=Number(s);return Number.isFinite(n)&&n>=0?n:null};
+function normalize(price,grader,targetGrader){
+ if(price===null)return null; let low=price,high=price,note='No grader adjustment';
+ if(targetGrader==='PSA' && grader==='BGS / Beckett'){low=price*1.30;high=price*1.60;note='BGS/Beckett → PSA: +30% to +60%';}
+ return {low,high,note};
+}
+function addComp(arr,label,priceId,graderId,gradeId,weight){
+ const price=nval(priceId);if(price===null)return;const grader=$(graderId).value;const grade=$(gradeId).value||'not entered';const norm=normalize(price,grader,$('targetGrader').value);arr.push({label,price,grader,grade,norm,weight});
+}
+$('exampleBtn').addEventListener('click',()=>{
+ $('player').value='Shohei Ohtani';$('year').value='2022';$('setname').value='Topps Luminaries Hit Kings';$('product').value='Topps Luminaries';$('parallel').value='Red';$('printRun').value='10';$('targetGrader').value='PSA';$('targetGrade').value='10';$('pop').value='3';
+ $('scarcity').value='15';$('gradePop').value='15';$('history').value='15';$('prestige').value='0';
+ $('yearPrice').value='8500';$('compYear').value='2024';$('yearGrader').value='BGS / Beckett';$('yearGrade').value='8.5';$('status').textContent='Ohtani founder test case loaded.';
+});
+$('cardForm').addEventListener('submit',e=>{
+ e.preventDefault();const comps=[];addComp(comps,'Recent exact sale','exactPrice','exactGrader','exactGrade',.40);addComp(comps,'Same-year closest comp','samePrice','sameGrader','sameGrade',.30);addComp(comps,'Closest other-year comp','yearPrice','yearGrader','yearGrade',.20);
+ const ask=nval('askPrice');if(ask!==null){const days=nval('days')||0;const stale=Math.max(.45,1-days/500);const norm=normalize(ask,$('askGrader').value,$('targetGrader').value);comps.push({label:'Live asking market',price:ask,grader:$('askGrader').value,grade:$('askGrade').value||'not entered',norm,weight:.10*stale,days,stale});}
+ if(!comps.length){$('status').textContent='Enter at least one comp or live ask.';$('result').classList.remove('show');return;}
+ let lo=0,hi=0,w=0;comps.forEach(c=>{lo+=c.norm.low*c.weight;hi+=c.norm.high*c.weight;w+=c.weight});lo/=w;hi/=w;
+ const scarcity=Number($('scarcity').value)||0,gradePop=Number($('gradePop').value)||0,history=Number($('history').value)||0,prestige=Number($('prestige').value)||0;
+ const mult=(1+scarcity/100)*(1+gradePop/100)*(1+history/100)*(1+prestige/100);const finalLow=lo*mult,finalHigh=hi*mult,center=(finalLow+finalHigh)/2;
+ let conf=50+comps.length*7;if(nval('exactPrice')!==null)conf+=12;if(nval('pop')!==null)conf+=5;conf=Math.min(94,Math.round(conf));
+ $('value').textContent=money(center);$('range').textContent='Estimated range: '+money(finalLow)+' – '+money(finalHigh);$('confidence').textContent='Confidence: '+conf+'%';
+ const lines=[];comps.forEach(c=>{let t='<div><strong>'+c.label+':</strong> '+money(c.price)+' · '+(c.grader||'grader not entered')+' '+c.grade+'. ';t+=(c.norm.low!==c.norm.high?'Normalized: '+money(c.norm.low)+'–'+money(c.norm.high)+' ('+c.norm.note+').':c.norm.note+'.');if(c.days!==undefined)t+=' '+Math.round(c.days)+' days unsold.';t+='</div>';lines.push(t);});
+ lines.push('<div><strong>Founder adjustments:</strong> scarcity '+scarcity+'%, grade/pop/ceiling '+gradePop+'%, historical '+history+'%, product prestige '+prestige+'%.</div>');
+ const cl=nval('cardLadder');if(cl!==null)lines.push('<div><strong>Card Ladder:</strong> '+money(cl)+' reference only.</div>');
+ $('reasoning').innerHTML=lines.join('');$('status').textContent='Valuation calculated.';$('result').classList.add('show');$('result').scrollIntoView({behavior:'smooth',block:'nearest'});
+});
+$('resetBtn').addEventListener('click',()=>{$('cardForm').reset();$('scarcity').value='0';$('gradePop').value='0';$('history').value='0';$('prestige').value='0';$('days').value='0';$('result').classList.remove('show');$('status').textContent='';});
+})();
+</script>
+</body>
+</html>
