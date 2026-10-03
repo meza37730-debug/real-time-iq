@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Real-Time Card IQ — Free Beta</title>
+<title>Real-Time Sports Card IQ — Free Beta</title>
 <style>
 :root{--bg:#0b1020;--panel:#121a2e;--card:#17213a;--text:#f5f7fb;--muted:#a9b4c8;--border:#2a3550;--accent:#78aefc}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(180deg,#0b1020,#0e1628);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
@@ -23,11 +23,30 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 <body>
 <main class="wrap">
 <section class="hero">
-<div><div class="kicker">Rare-Card Real-Time Valuation Engine</div><h1>Real-Time Card IQ</h1><div class="muted">Up-to-the-minute valuations for rare cards — even when no recent exact sale exists.</div></div>
+<div><div class="kicker">Rare Sports-Card Real-Time Valuation Engine</div><h1>Real-Time Sports Card IQ</h1><div class="muted">Up-to-the-minute valuations for rare sports cards — even when no recent exact sale exists.</div></div>
 <div class="pill">FREE BETA · No credit card</div>
 </section>
 
-<form id="cardForm">
+<section class="panel" id="quickStart">
+<h2>Value a card</h2>
+<div class="muted">Start with the camera or search. Advanced valuation keeps the full founder evidence controls.</div>
+<div class="actions">
+<button type="button" id="scanBtn">📸 SCAN MY CARD</button>
+<button type="button" id="searchBtn" class="secondary">🔎 SEARCH MY CARD</button>
+<button type="button" id="advancedBtn" class="secondary">🧠 ADVANCED VALUATION</button>
+</div>
+<div id="scanArea" style="display:none;margin-top:16px">
+<div class="fields">
+<label>Front photo<input id="frontPhoto" type="file" accept="image/*" capture="environment"></label>
+<label>Back photo<input id="backPhoto" type="file" accept="image/*" capture="environment"></label>
+</div>
+<div class="tiny" style="margin-top:10px">Beta capture: front + back photos can be taken now. Automatic card identification and the Visual Card Condition Report require the vision backend and are not active yet.</div>
+<div class="actions"><button type="button" id="estimateScanBtn">Estimate</button></div>
+<div id="scanStatus" class="status"></div>
+</div>
+</section>
+
+<form id="cardForm" style="display:none">
 <div class="grid2">
 <section class="panel">
 <h2>Target card</h2>
@@ -109,7 +128,11 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 <script>
 (() => {
 const $=id=>document.getElementById(id);
-const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format(n);
+const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',minimumFractionDigits:2,maximumFractionDigits:2}).format(n);
+$('scanBtn').addEventListener('click',()=>{$('scanArea').style.display='block';$('cardForm').style.display='none';$('scanArea').scrollIntoView({behavior:'smooth',block:'nearest'});});
+$('advancedBtn').addEventListener('click',()=>{$('cardForm').style.display='block';$('scanArea').style.display='none';$('cardForm').scrollIntoView({behavior:'smooth',block:'start'});});
+$('searchBtn').addEventListener('click',()=>{$('cardForm').style.display='block';$('scanArea').style.display='none';$('player').focus();$('status').textContent='Search beta: enter the player and card details below.';});
+$('estimateScanBtn').addEventListener('click',()=>{const front=$('frontPhoto').files[0],back=$('backPhoto').files[0];if(!front||!back){$('scanStatus').textContent='Take both front and back photos first.';return;}$('scanStatus').textContent='Front + back captured. Automatic photo identification and Visual Card Condition Report are the next backend step; no fake estimate is generated from photos yet.';});
 const nval=id=>{const s=$(id).value.trim();if(!s)return null;const n=Number(s);return Number.isFinite(n)&&n>=0?n:null};
 function normalize(price,grader,targetGrader){
  if(price===null)return null; let low=price,high=price,note='No grader adjustment';
