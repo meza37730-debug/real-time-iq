@@ -47,7 +47,7 @@ button{border:0;border-radius:12px;padding:12px 16px;font-weight:900;font-size:1
 
 <section class="panel">
 <h2>Founder adjustments</h2>
-<div class="muted">Temporary beta controls. Enter percentages, e.g. 15 means +15%.</div>
+<div class="muted">Temporary beta controls. Enter relative target-vs-comp percentages, e.g. 15 means +15%. Card IQ blends these signals instead of compounding them.</div>
 <div class="fields" style="margin-top:12px">
 <label>Scarcity / parallel %<input id="scarcity" type="number" value="0"></label>
 <label>Grade / population / ceiling %<input id="gradePop" type="number" value="0"></label>
@@ -130,11 +130,11 @@ $('cardForm').addEventListener('submit',e=>{
  if(!comps.length){$('status').textContent='Enter at least one comp or live ask.';$('result').classList.remove('show');return;}
  let lo=0,hi=0,w=0;comps.forEach(c=>{lo+=c.norm.low*c.weight;hi+=c.norm.high*c.weight;w+=c.weight});lo/=w;hi/=w;
  const scarcity=Number($('scarcity').value)||0,gradePop=Number($('gradePop').value)||0,history=Number($('history').value)||0,prestige=Number($('prestige').value)||0;
- const mult=(1+scarcity/100)*(1+gradePop/100)*(1+history/100)*(1+prestige/100);const finalLow=lo*mult,finalHigh=hi*mult,center=(finalLow+finalHigh)/2;
+ const activeAdjustments=[scarcity,gradePop,history,prestige].filter(v=>v!==0);const blendedAdjustment=activeAdjustments.length?activeAdjustments.reduce((a,b)=>a+b,0)/activeAdjustments.length:0;const mult=1+blendedAdjustment/100;const finalLow=lo*mult,finalHigh=hi*mult,center=(finalLow+finalHigh)/2;
  let conf=50+comps.length*7;if(nval('exactPrice')!==null)conf+=12;if(nval('pop')!==null)conf+=5;conf=Math.min(94,Math.round(conf));
  $('value').textContent=money(center);$('range').textContent='Estimated range: '+money(finalLow)+' – '+money(finalHigh);$('confidence').textContent='Confidence: '+conf+'%';
  const lines=[];comps.forEach(c=>{let t='<div><strong>'+c.label+':</strong> '+money(c.price)+' · '+(c.grader||'grader not entered')+' '+c.grade+'. ';t+=(c.norm.low!==c.norm.high?'Normalized: '+money(c.norm.low)+'–'+money(c.norm.high)+' ('+c.norm.note+').':c.norm.note+'.');if(c.days!==undefined)t+=' '+Math.round(c.days)+' days unsold.';t+='</div>';lines.push(t);});
- lines.push('<div><strong>Founder adjustments:</strong> scarcity '+scarcity+'%, grade/pop/ceiling '+gradePop+'%, historical '+history+'%, product prestige '+prestige+'%.</div>');
+ lines.push('<div><strong>Founder adjustments:</strong> scarcity '+scarcity+'%, grade/pop/ceiling '+gradePop+'%, historical '+history+'%, product prestige '+prestige+'%. <strong>Blended relative adjustment:</strong> '+(blendedAdjustment>=0?'+':'')+blendedAdjustment.toFixed(1)+'% (not compounded).</div>');
  const cl=nval('cardLadder');if(cl!==null)lines.push('<div><strong>Card Ladder:</strong> '+money(cl)+' reference only.</div>');
  $('reasoning').innerHTML=lines.join('');$('status').textContent='Valuation calculated.';$('result').classList.add('show');$('result').scrollIntoView({behavior:'smooth',block:'nearest'});
 });
